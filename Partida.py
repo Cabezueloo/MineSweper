@@ -1,6 +1,6 @@
 import numpy as np
 import celda
-from const import datos,termcolors
+from const import datos,termcolors,FLAGGED
 from PIL import Image, ImageDraw
 from termcolor import colored
 
@@ -33,6 +33,8 @@ class Partida:
 
         for row in range(self.rows):
             for col in range(self.columns):
+                celdaActual = self.board[row][col]
+
                 # Calcular el centro de cada celda
                 center_x, center_y = (col * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK, \
                 row * self.SIZEBLOCK + 0.50 * self.SIZEBLOCK)
@@ -40,55 +42,48 @@ class Partida:
                 center_y = int(center_y)
 
                 # Definir un radio alrededor del centro (opcional, dependiendo de cuántos píxeles quieras inspeccionar)
-                radio = 5  # Puedes ajustar este valor
+                radio = 20  # Puedes ajustar este valor
                 
                 # Obtener los píxeles dentro del radio alrededor del centro
                 region = image_np[max(0, center_y - radio): center_y + radio, max(0, center_x - radio): center_x + radio]
 
-                # Imprimir los colores (valores RGB) de los píxeles de la región
-                #print(f"Celda ({row}, {col}) - Centro: ({center_x}, {center_y})")
-               # print("Píxeles de la región: ")
-               # print(region)  # Imprime los valores de los píxeles (puede ser muy largo, ajusta si es necesario)
-                
                 # Guardar la subimagen de la región en un archivo
                 subimage = image_draw.crop((max(0, center_x - radio), max(0, center_y - radio),
                                             center_x + radio, center_y + radio))
                 subimage_path = f"region_row{row}_col{col}.png"
                 subimage.save(subimage_path)
-                print(f"Guardada subimagen de la celda ({row}, {col}) en {subimage_path}")
+                #subimage.show()
 
-                # Aquí puedes hacer un análisis del color promedio de los píxeles dentro de esta región
-                avg_color = np.mean(region, axis=(0, 1))  # Calcula el color promedio de la región
+
                 
-                #print(f"Color promedio: {avg_color}\n")
+                if not celdaActual.flagged and celdaActual.value != '0':
+                    valor : str = self.detectNumber(region)
 
-                valor : str = 'D'
+                    if self.isFlagged(row,col):
+                        valor = FLAGGED
+                        
                 
-                if self.isFlagged(row,col):
-                    valor = 'F'
                     self.board[row][col].clicked = True
-                else:
-                    valor = self.detectNumber(avg_color)
-                    self.board[row][col].clicked = True
-                    
-                self.board[row][col].value = valor
+                        
+                    self.board[row][col].value = valor
 
+    
+    
+    # Método auxiliar para verificar si hay algun color existe en la region.
+    def detectNumber(self, region):
+        # Recorrer cada número y su color de referencia
+        for num, color_ref in datos.items():
+            # Comprobar si algún píxel en la región coincide con `color_ref` con una tolerancia
+            
+            if np.any(np.all(np.isclose(region, color_ref, atol=50), axis=-1)):
+                return num
+        return '0'  # Devolver '0' o un valor predeterminado si no se encuentra ningún color coincidente(Significa que no hay bomba)
+         
          
     def isFlagged(self,row,col) -> bool:
         return self.board[row][col].flagged
         
-    # Método auxiliar para verificar si el color detectado corresponde a un número
-    def detectNumber(self, avg_color) -> str:
-        for x in datos:
-            color_ref = datos[x]
-            # Debug: imprimir los colores comparados
-            print(f"Comparando {avg_color} con referencia {color_ref}")
-            
-            if np.allclose(avg_color, color_ref, atol=30):  # Tolerancia ajustable
-                print(f"Detectado número {x} para el color {avg_color}")
-                return x
-        print(f"No se detectó ningún número para el color {avg_color}")
-        return None  # Si no se detecta ningún color
+   
 
     def printBoard(self):
         print("Tablero actual:")
