@@ -36,42 +36,34 @@ class Partida:
         for row in range(self.rows):
             for col in range(self.columns):
                 celdaActual = self.board[row][col]
-                
-                # Calcular el centro de cada celda
-                center_x, center_y = (col * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK, \
-                row * self.SIZEBLOCK + 0.50 * self.SIZEBLOCK)
-                center_x = int(center_x)
-                center_y = int(center_y)
-
-                # Definir un radio alrededor del centro (opcional, dependiendo de cuántos píxeles quieras inspeccionar)
-                radio = 20  # Puedes ajustar este valor
-                
-                # Obtener los píxeles dentro del radio alrededor del centro
-                region = image_np[max(0, center_y - radio): center_y + radio, max(0, center_x - radio): center_x + radio]
-
-                # Guardar la subimagen de la región en un archivo
-                subimage = image_draw.crop((max(0, center_x - radio), max(0, center_y - radio),
-                                            center_x + radio, center_y + radio))
-                subimage_path = f"region_row{row}_col{col}.png"
-                subimage.save(subimage_path)
-                #subimage.show()
-
-
-                
                 if not celdaActual.flagged and celdaActual.value != '0' and not celdaActual.clicked:
+                    # Calcular el centro de cada celda
+                    center_x, center_y = (col * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK, \
+                    row * self.SIZEBLOCK + 0.50 * self.SIZEBLOCK)
+                    center_x = int(center_x)
+                    center_y = int(center_y)
+
+                    # Definir un radio alrededor del centro (opcional, dependiendo de cuántos píxeles quieras inspeccionar)
+                    radio = 20  # Puedes ajustar este valor
+                    
+                    # Obtener los píxeles dentro del radio alrededor del centro
+                    region = image_np[max(0, center_y - radio): center_y + radio, max(0, center_x - radio): center_x + radio]
+
+                    
+                
                     
                     valor : str = self.detectNumber(region)
                     self.board[row][col].value = valor
 
-                    if self.isFlagged(row,col):
-                        valor = FLAGGED
+                   
+
                         
                     if valor != 'D':
                         self.board[row][col].clicked = True
                         
 
         
-        self.printBoard()
+        
         #Una vez se ha generado todo el tablero
         for row in range(self.rows):
             for col in range(self.columns):
@@ -82,19 +74,32 @@ class Partida:
         #Poner Flaggs dependiendo de las celdas alrededor
         for row in range(self.rows):
             for col in range(self.columns):
-                print("Posicion Fila",row, "columna ",col, " tiene ",self.board[row][col].desconocidosAlrededor()," desconocidos alrededor" )
-                if not self.board[row][col].flagged:
+                #print("Posicion Fila",row, "columna ",col, " tiene ",self.board[row][col].desconocidosAlrededor()," desconocidos alrededor" )
+                if not self.board[row][col].flagged and not (self.board[row][col].value == D or self.board[row][col].value == '0'):
+                   
                     if self.board[row][col].value == str(self.board[row][col].desconocidosAlrededor()):
+                        print("Puso flag")
+                        self.putFlaggs(row,col)
 
-                        self.makeClickInScreen(row,col)
-
-        #Hacer click para revelar mas tablero
         
+        #Hacer click para revelar mas tablero
+        for row in range(self.rows):
+            for col in range(self.columns):        
+                if not self.board[row][col].flagged:
+                    if self.board[row][col].value == self.board[row][col].flaggsAlrededor():
+                       self.revelBlock(row,col) 
 
             
-            
+    def revelBlock(self,row,col):
+        neightbors = self.board[row][col].aroundCeldas
+        for x in neightbors:
+            if x.value == D and not x.flagged:
+                center_x = int(self.left + x.col * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK)
+                center_y = int(self.top + x.row * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK)
+                pyautogui.click(x=center_x,y=center_y,button="left")
+                          
     #Arreglar
-    def makeClickInScreen(self,row,col):
+    def putFlaggs(self,row,col):
         
         neightbors = self.board[row][col].aroundCeldas
         
@@ -102,11 +107,9 @@ class Partida:
             if x.value == D and not x.flagged:
                 center_x = int(self.left + x.col * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK)
                 center_y = int(self.top + x.row * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK)
-
-                print("X = ",center_x)
-                print("y = ",center_y)
-                #pyautogui.moveTo(x=center_x,y=center_y)
+           
                 pyautogui.click(x=center_x,y=center_y,button="right")
+                
                 self.board[x.row][x.col].setFaggled()
                 self.board[x.row][x.col].clicked = True
 
@@ -139,10 +142,6 @@ class Partida:
                 return num
         return '0'  # Devolver '0' o un valor predeterminado si no se encuentra ningún color coincidente(Significa que no hay bomba)
          
-         
-    def isFlagged(self,row,col) -> bool:
-        return self.board[row][col].flagged
-        
    
 
     def printBoard(self):

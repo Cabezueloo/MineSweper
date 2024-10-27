@@ -2,6 +2,9 @@ import pyautogui
 from pynput.mouse import Listener
 from Partida import Partida
 import pyscreenshot as ImageGrab
+import keyboard
+
+import time
 
 coord = []
 
@@ -18,6 +21,7 @@ def click(x, y, button, pressed):
 # Escuchar los clics del mouse
 with Listener(on_click=click) as listener:
     listener.join()
+
 
 # Coordenadas de la esquina superior izquierda y la esquina inferior derecha
 left, top = coord[0]
@@ -37,16 +41,21 @@ print("Right -> ", right, " Bottom -> ", bottom)
 print(f"Tamaño de cada celda: Ancho -> {sizeBlock_width}px, Alto -> {sizeBlock_height}px")
 
 
+partida = Partida(left,top,right,bottom,rows,columns,SIZEBLOCK)
 while True:
     
-    partida = Partida(left,top,right,bottom,rows,columns,SIZEBLOCK)
     im = ImageGrab.grab(bbox=(left,top,right,bottom))
     #im.show()
     
     partida.updateBoard(im)
-    #partida.printBoard()
+    if keyboard.is_pressed('q'):
+        pyautogui.FAILSAFE
+        break
+
+    partida.printBoard()
+    print()
     
-    break
+    
     
     
     

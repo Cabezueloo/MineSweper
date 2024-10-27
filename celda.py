@@ -15,9 +15,13 @@ class Celda:
 
     
     def desconocidosAlrededor(self):
-        desconocidas = 0
-        for x in self.aroundCeldas:
-            if(x.value == const.D):
-                desconocidas+=1
+       
+        desconocidas = sum(x.value == const.D for x in self.aroundCeldas)
+        return str(desconocidas)
+
+    
+    def flaggsAlrededor(self) -> str:
         
-        return desconocidas
+        flags = sum(x.flagged for x in self.aroundCeldas)
+        return str(flags)
+
