@@ -1,11 +1,13 @@
 import numpy as np
 import celda
-from const import datos,termcolors,FLAGGED
+from const import datos,termcolors,FLAGGED,D
 from PIL import Image, ImageDraw
 from termcolor import colored
+import pyautogui 
 
 class Partida:
     def __init__(self, left, top, right, bottom, rows, columns, SIZEBLOCK) -> None:
+        
         self.left, self.top = left, top
         self.right, self.bottom = right, bottom
         self.rows, self.columns = rows, columns
@@ -17,7 +19,7 @@ class Partida:
         for row in range(self.rows):
             rowInfo = []
             for col in range(self.columns):
-                rowInfo.append(celda.Celda())
+                rowInfo.append(celda.Celda(row,col))
             
             board.append(rowInfo)
             
@@ -34,7 +36,7 @@ class Partida:
         for row in range(self.rows):
             for col in range(self.columns):
                 celdaActual = self.board[row][col]
-
+                
                 # Calcular el centro de cada celda
                 center_x, center_y = (col * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK, \
                 row * self.SIZEBLOCK + 0.50 * self.SIZEBLOCK)
@@ -56,18 +58,76 @@ class Partida:
 
 
                 
-                if not celdaActual.flagged and celdaActual.value != '0':
+                if not celdaActual.flagged and celdaActual.value != '0' and not celdaActual.clicked:
+                    
                     valor : str = self.detectNumber(region)
+                    self.board[row][col].value = valor
 
                     if self.isFlagged(row,col):
                         valor = FLAGGED
                         
-                
-                    self.board[row][col].clicked = True
+                    if valor != 'D':
+                        self.board[row][col].clicked = True
                         
-                    self.board[row][col].value = valor
 
-    
+        
+        self.printBoard()
+        #Una vez se ha generado todo el tablero
+        for row in range(self.rows):
+            for col in range(self.columns):
+                if not self.board[row][col].value == 'D' and not self.board[row][col].value == '0':
+                    celdasAlrededorLista : list = self.setCeldasAlrededor(row,col)
+                    self.board[row][col].setAroundCeldas(celdasAlrededorLista)
+
+        #Poner Flaggs dependiendo de las celdas alrededor
+        for row in range(self.rows):
+            for col in range(self.columns):
+                print("Posicion Fila",row, "columna ",col, " tiene ",self.board[row][col].desconocidosAlrededor()," desconocidos alrededor" )
+                if not self.board[row][col].flagged:
+                    if self.board[row][col].value == str(self.board[row][col].desconocidosAlrededor()):
+
+                        self.makeClickInScreen(row,col)
+
+        #Hacer click para revelar mas tablero
+        
+
+            
+            
+    #Arreglar
+    def makeClickInScreen(self,row,col):
+        
+        neightbors = self.board[row][col].aroundCeldas
+        
+        for x in neightbors:
+            if x.value == D and not x.flagged:
+                center_x = int(self.left + x.col * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK)
+                center_y = int(self.top + x.row * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK)
+
+                print("X = ",center_x)
+                print("y = ",center_y)
+                #pyautogui.moveTo(x=center_x,y=center_y)
+                pyautogui.click(x=center_x,y=center_y,button="right")
+                self.board[x.row][x.col].setFaggled()
+                self.board[x.row][x.col].clicked = True
+
+
+
+    def setCeldasAlrededor(self,row,col) -> list:
+        celdasAlrededor = []
+        for x in range(-1,2):
+            for y in range(-1,2):
+                if (x == 0 and y == 0):
+                    continue  # Saltar la posición central
+                nueva_fila = row + x
+                nueva_columna = col + y
+
+                # Para que no de error por salir index bound of bonds, debe de ser mayor que 0 y menor que el tamagno de campo
+                if (0 <= nueva_fila < self.rows) and (0 <= nueva_columna < self.columns):
+                    celdasAlrededor.append(self.board[nueva_fila][nueva_columna])
+        
+        return celdasAlrededor
+
+
     
     # Método auxiliar para verificar si hay algun color existe en la region.
     def detectNumber(self, region):

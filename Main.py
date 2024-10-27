@@ -41,10 +41,10 @@ while True:
     
     partida = Partida(left,top,right,bottom,rows,columns,SIZEBLOCK)
     im = ImageGrab.grab(bbox=(left,top,right,bottom))
-    im.show()
+    #im.show()
     
     partida.updateBoard(im)
-    partida.printBoard()
+    #partida.printBoard()
     
     break
     
