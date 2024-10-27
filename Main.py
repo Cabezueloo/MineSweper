@@ -3,7 +3,6 @@ from pynput.mouse import Listener
 from Partida import Partida
 import pyscreenshot as ImageGrab
 import keyboard
-
 import time
 
 coord = []
@@ -54,7 +53,7 @@ while True:
 
     partida.printBoard()
     print()
-    
+    time.sleep(0.1)
     
     
     

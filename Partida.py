@@ -4,6 +4,8 @@ from const import datos,termcolors,FLAGGED,D
 from PIL import Image, ImageDraw
 from termcolor import colored
 import pyautogui 
+import time
+
 
 class Partida:
     def __init__(self, left, top, right, bottom, rows, columns, SIZEBLOCK) -> None:
@@ -67,17 +69,18 @@ class Partida:
         #Una vez se ha generado todo el tablero
         for row in range(self.rows):
             for col in range(self.columns):
-                if not self.board[row][col].value == 'D' and not self.board[row][col].value == '0':
+                if not self.board[row][col].value == D and not self.board[row][col].value == '0':
                     celdasAlrededorLista : list = self.setCeldasAlrededor(row,col)
                     self.board[row][col].setAroundCeldas(celdasAlrededorLista)
 
         #Poner Flaggs dependiendo de las celdas alrededor
+        print()
         for row in range(self.rows):
             for col in range(self.columns):
                 #print("Posicion Fila",row, "columna ",col, " tiene ",self.board[row][col].desconocidosAlrededor()," desconocidos alrededor" )
                 if not self.board[row][col].flagged and not (self.board[row][col].value == D or self.board[row][col].value == '0'):
                    
-                    if self.board[row][col].value == str(self.board[row][col].desconocidosAlrededor()):
+                    if self.board[row][col].value == self.board[row][col].desconocidosAlrededor():
                         print("Puso flag")
                         self.putFlaggs(row,col)
 
@@ -85,7 +88,7 @@ class Partida:
         #Hacer click para revelar mas tablero
         for row in range(self.rows):
             for col in range(self.columns):        
-                if not self.board[row][col].flagged:
+                if not self.board[row][col].flagged or not (self.board[row][col].value == D or self.board[row][col].value == '0') :
                     if self.board[row][col].value == self.board[row][col].flaggsAlrededor():
                        self.revelBlock(row,col) 
 
@@ -107,10 +110,10 @@ class Partida:
             if x.value == D and not x.flagged:
                 center_x = int(self.left + x.col * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK)
                 center_y = int(self.top + x.row * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK)
-           
+                print("FILA",x.row," Coluna ",x.col)
                 pyautogui.click(x=center_x,y=center_y,button="right")
-                
-                self.board[x.row][x.col].setFaggled()
+                self.board[x.row][x.col].flagged = True
+                #self.board[x.row][x.col].value = FLAGGED #Si pongo esto se rompe todo
                 self.board[x.row][x.col].clicked = True
 
 
