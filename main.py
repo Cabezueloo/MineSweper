@@ -1,9 +1,8 @@
-import pyautogui
 from pynput.mouse import Listener
-from Partida import Partida
+from modelo import Tablero
 import pyscreenshot as ImageGrab
-import keyboard
-import time
+from vista import Vista
+from controlador import Controlador
 
 coord = []
 
@@ -27,35 +26,21 @@ left, top = coord[0]
 right, bottom = coord[1]
 
 # Número de filas y columnas (esto depende del tamaño de tu tablero)
-rows = 8
-columns = 8
+rows = 16
+columns = 16
+
 
 # Tamaño de cada bloque/celda
 sizeBlock_width = (right - left) / columns
 sizeBlock_height = (bottom - top) / rows
 SIZEBLOCK = min(sizeBlock_height,sizeBlock_width)
 
-print("Left -> ", left, " Top -> ", top)
-print("Right -> ", right, " Bottom -> ", bottom)
-print(f"Tamaño de cada celda: Ancho -> {sizeBlock_width}px, Alto -> {sizeBlock_height}px")
+
+modelo = Tablero(rows=rows,columns=columns)
+
+vista = Vista(left,top,right,bottom,rows,columns,SIZEBLOCK,modelo)
+
+controlador = Controlador(modelo,vista)
 
 
-partida = Partida(left,top,right,bottom,rows,columns,SIZEBLOCK)
-while True:
-    
-    im = ImageGrab.grab(bbox=(left,top,right,bottom))
-    #im.show()
-    
-    partida.updateBoard(im)
-    if keyboard.is_pressed('q'):
-        pyautogui.FAILSAFE
-        break
-
-    partida.printBoard()
-    print()
-    time.sleep(0.1)
-    
-    
-    
-    
-    
+controlador.loopMain()
