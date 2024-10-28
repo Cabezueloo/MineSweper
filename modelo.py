@@ -53,12 +53,12 @@ class Celda:
     def setAroundCeldas(self,lista):
         self.aroundCeldas = lista
     
-    def desconocidosAlrededor(self):
+    def desconocidosAlrededor(self) -> int:
        
         desconocidas = sum(x.value == const.D for x in self.aroundCeldas)
         return desconocidas
     
-    def flaggsAlrededor(self) -> str:
+    def flaggsAlrededor(self) -> int:
         
         flags = sum(x.flagged for x in self.aroundCeldas)
         return flags

@@ -36,7 +36,7 @@ class Vista:
             if x.value == const.D and not x.flagged:
                 center_x = int(self.left + x.col * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK)
                 center_y = int(self.top + x.row * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK)
-                print("FILA",x.row," Coluna ",x.col)
+                
                 pyautogui.click(x=center_x,y=center_y,button="right")
                 lista.append((x.row,x.col))
         

@@ -65,14 +65,14 @@ class Controlador():
                 if not tablero[row][col].flagged and not (tablero[row][col].value == const.D or tablero[row][col].value == const.SIN_BOMBAS_ALREDEDOR):
                    
                     if tablero[row][col].value == tablero[row][col].desconocidosAlrededor():
-                        print("Puso flag")
+                        print("Puso flag",row," col",col)
                         lista = self.vista.putFlaggs(row,col,tablero=tablero)
                         self.bombasRestantes= self.bombasRestantes-len(lista)
                         for x in lista:
-                            
-                            tablero[x[0]][x[1]].flagged = True
-                            #self.board[x.row][x.col].value = FLAGGED #Si pongo esto se rompe todo
-                            tablero[x[0]][x[1]].clicked = True
+                            r,f = x[0],x[1]
+                            tablero[r][f].flagged = True
+                            #tablero[r][f].value = const.FLAGGED #Si pongo esto se rompe todo
+                            tablero[r][f].clicked = True
 
         
         
@@ -111,10 +111,11 @@ class Controlador():
             
             time.sleep(0.2)
             im = self.vista.capturaTablero()
-        
+            inicio = time.time()
             self.modelo.board = self.updateBoard(im)
         
             self.printBoard()
+            print("TIEMPO CICLO-> ", time.time()-inicio) 
             if self.bombasRestantes==0:
                 self.vista.primerClick() 
                 time.sleep(1)       
