@@ -1,3 +1,4 @@
+import const
 
 class Tablero:
     def __init__(self,rows,columns) -> None:
@@ -46,7 +47,7 @@ class Celda:
         self.row,self.col = row,col
         self.flagged : bool = False
         self.clicked : bool = False
-        self.value = 'D'
+        self.value = const.D
         self.aroundCeldas = []
         
     def setAroundCeldas(self,lista):
@@ -54,10 +55,10 @@ class Celda:
     
     def desconocidosAlrededor(self):
        
-        desconocidas = sum(x.value == 'D' for x in self.aroundCeldas)
-        return str(desconocidas)
+        desconocidas = sum(x.value == const.D for x in self.aroundCeldas)
+        return desconocidas
     
     def flaggsAlrededor(self) -> str:
         
         flags = sum(x.flagged for x in self.aroundCeldas)
-        return str(flags)
+        return flags

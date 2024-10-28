@@ -4,12 +4,16 @@ from modelo import Tablero
 from vista import Vista
 from termcolor import colored
 from const import termcolors
+import pyautogui
+import time
+import const
 
 class Controlador():
     
     def __init__(self, modelo:Tablero,vista:Vista) -> None:
         self.modelo = modelo
         self.vista = vista
+        self.bombasRestantes = 40
         
     
     def updateBoard(self, imageBoard) -> list:
@@ -23,7 +27,7 @@ class Controlador():
         for row in range(self.modelo.rows):
             for col in range(self.modelo.columns):
                 celdaActual = tablero[row][col]
-                if not celdaActual.flagged and celdaActual.value != '0' and not celdaActual.clicked:
+                if not celdaActual.flagged and celdaActual.value != const.SIN_BOMBAS_ALREDEDOR and not celdaActual.clicked:
                     # Calcular el centro de cada celda
                     center_x, center_y = (col * self.vista.SIZEBLOCK + 0.5 * self.vista.SIZEBLOCK, \
                     row * self.vista.SIZEBLOCK + 0.50 * self.vista.SIZEBLOCK)
@@ -48,7 +52,7 @@ class Controlador():
                     valor : str = self.vista.detectNumber(region)
                     tablero[row][col].value = valor
 
-                    if valor != 'D':
+                    if valor != const.D:
                         tablero[row][col].clicked = True
                         
         ###
@@ -58,12 +62,12 @@ class Controlador():
         for row in range(self.modelo.rows):
             for col in range(self.modelo.columns):
                 #print("Posicion Fila",row, "columna ",col, " tiene ",self.board[row][col].desconocidosAlrededor()," desconocidos alrededor" )
-                if not tablero[row][col].flagged and not (tablero[row][col].value == 'D' or tablero[row][col].value == '0'):
+                if not tablero[row][col].flagged and not (tablero[row][col].value == const.D or tablero[row][col].value == const.SIN_BOMBAS_ALREDEDOR):
                    
                     if tablero[row][col].value == tablero[row][col].desconocidosAlrededor():
                         print("Puso flag")
                         lista = self.vista.putFlaggs(row,col,tablero=tablero)
-                        
+                        self.bombasRestantes= self.bombasRestantes-len(lista)
                         for x in lista:
                             
                             tablero[x[0]][x[1]].flagged = True
@@ -75,7 +79,7 @@ class Controlador():
         #Hacer click para revelar mas tablero
         for row in range(self.modelo.rows):
             for col in range(self.modelo.columns):        
-                if not tablero[row][col].flagged or not (tablero[row][col].value == 'D' or tablero[row][col].value == '0') :
+                if not tablero[row][col].flagged or not (tablero[row][col].value == const.D or tablero[row][col].value == const.SIN_BOMBAS_ALREDEDOR) :
                     if tablero[row][col].value == tablero[row][col].flaggsAlrededor():
                        self.vista.revelBlock(row,col,tablero)
                        
@@ -88,9 +92,11 @@ class Controlador():
             row_str = ""  # Cadena para construir la fila completa antes de imprimir
             for c in range(self.modelo.columns):
                 if self.modelo.board[f][c].flagged:
-                    cell_display = colored("F", termcolors['F'])
+                    cell_display = colored("F", termcolors[const.FLAGGED])
                 else:
                     valor = self.modelo.board[f][c].value
+                    if valor == -1:
+                        valor = 'D'
                     color = termcolors.get(valor, "white")  # Color blanco por defecto
                     cell_display = colored(valor, color)
                 
@@ -98,13 +104,25 @@ class Controlador():
             print(row_str)  # Imprimir la fila completa
             
 
-    def loopMain(self):
-        for x in range(30):
+    def loopMain(self) -> bool:
+        
+        
+        while(True):
+            
+            time.sleep(0.2)
             im = self.vista.capturaTablero()
         
             self.modelo.board = self.updateBoard(im)
         
             self.printBoard()
+            if self.bombasRestantes==0:
+                self.vista.primerClick() 
+                time.sleep(1)       
+                pyautogui.keyDown('f2')                    
+                pyautogui.keyUp('f2')                    
+                break
+            
+                    
         
         
         

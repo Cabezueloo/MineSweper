@@ -3,7 +3,7 @@ from modelo import Tablero
 import pyscreenshot as ImageGrab
 from vista import Vista
 from controlador import Controlador
-
+import time
 coord = []
 
 def click(x, y, button, pressed):
@@ -36,11 +36,13 @@ sizeBlock_height = (bottom - top) / rows
 SIZEBLOCK = min(sizeBlock_height,sizeBlock_width)
 
 
-modelo = Tablero(rows=rows,columns=columns)
+while(True):
+    modelo = Tablero(rows=rows,columns=columns)
 
-vista = Vista(left,top,right,bottom,rows,columns,SIZEBLOCK,modelo)
+    vista = Vista(left,top,right,bottom,rows,columns,SIZEBLOCK,modelo)
 
-controlador = Controlador(modelo,vista)
+    controlador = Controlador(modelo,vista)
 
+    controlador.vista.primerClick()
+    controlador.loopMain()
 
-controlador.loopMain()
