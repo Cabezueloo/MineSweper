@@ -46,12 +46,13 @@ class Vista:
     def revelBlock(self,row,col,tablero):
         
         neightbors = tablero[row][col].aroundCeldas
-        
+        print("REVELAR")
         for x in neightbors:
             if x.value == const.D and not x.flagged:
                 center_x = int(self.left + x.col * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK)
                 center_y = int(self.top + x.row * self.SIZEBLOCK + 0.5 * self.SIZEBLOCK)
                 pyautogui.click(x=center_x,y=center_y,button="left")
+                print("REVELAR DENTRO")
                 
     def capturaTablero(self):
         return ImageGrab.grab(bbox=(self.left,self.top,self.right,self.bottom))

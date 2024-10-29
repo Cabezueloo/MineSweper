@@ -3,10 +3,12 @@ import numpy as np
 from modelo import Tablero
 from vista import Vista
 from termcolor import colored
-from const import termcolors
+import const
 import pyautogui
 import time
-import const
+import pandas as pd
+import os
+
 
 class Controlador():
     
@@ -14,6 +16,7 @@ class Controlador():
         self.modelo = modelo
         self.vista = vista
         self.bombasRestantes = 40
+        self.imposibleResolver = False
         
     
     def updateBoard(self, imageBoard) -> list:
@@ -64,7 +67,7 @@ class Controlador():
                 #print("Posicion Fila",row, "columna ",col, " tiene ",self.board[row][col].desconocidosAlrededor()," desconocidos alrededor" )
                 if not tablero[row][col].flagged and not (tablero[row][col].value == const.D or tablero[row][col].value == const.SIN_BOMBAS_ALREDEDOR):
                    
-                    if tablero[row][col].value == tablero[row][col].desconocidosAlrededor():
+                    if tablero[row][col].value == tablero[row][col].desconocidosAlrededor() and tablero[row][col].flaggsAlrededor()- tablero[row][col].desconocidosAlrededor() != 0:
                         print("Puso flag",row," col",col)
                         lista = self.vista.putFlaggs(row,col,tablero=tablero)
                         self.bombasRestantes= self.bombasRestantes-len(lista)
@@ -77,11 +80,15 @@ class Controlador():
         
         
         #Hacer click para revelar mas tablero
+        imposible = True
         for row in range(self.modelo.rows):
             for col in range(self.modelo.columns):        
                 if not tablero[row][col].flagged or not (tablero[row][col].value == const.D or tablero[row][col].value == const.SIN_BOMBAS_ALREDEDOR) :
-                    if tablero[row][col].value == tablero[row][col].flaggsAlrededor():
+                    if tablero[row][col].value == tablero[row][col].flaggsAlrededor() and tablero[row][col].flaggsAlrededor()- tablero[row][col].desconocidosAlrededor() != 0:
                        self.vista.revelBlock(row,col,tablero)
+                       imposible = False
+        
+        self.imposibleResolver = imposible
                        
         return tablero
         
@@ -92,12 +99,12 @@ class Controlador():
             row_str = ""  # Cadena para construir la fila completa antes de imprimir
             for c in range(self.modelo.columns):
                 if self.modelo.board[f][c].flagged:
-                    cell_display = colored("F", termcolors[const.FLAGGED])
+                    cell_display = colored("F", const.termcolors[const.FLAGGED])
                 else:
                     valor = self.modelo.board[f][c].value
                     if valor == -1:
                         valor = 'D'
-                    color = termcolors.get(valor, "white")  # Color blanco por defecto
+                    color = const.termcolors.get(valor, "white")  # Color blanco por defecto
                     cell_display = colored(valor, color)
                 
                 row_str += f"{cell_display} "  # Agregar la celda a la fila con un espacio
@@ -107,20 +114,30 @@ class Controlador():
     def loopMain(self) -> bool:
         
         
+        inicio = time.time()
         while(True):
-            
             time.sleep(0.2)
             im = self.vista.capturaTablero()
-            inicio = time.time()
             self.modelo.board = self.updateBoard(im)
         
             self.printBoard()
-            print("TIEMPO CICLO-> ", time.time()-inicio) 
-            if self.bombasRestantes==0:
-                self.vista.primerClick() 
+            
+            if self.bombasRestantes==0 or self.imposibleResolver:
+                tiempoFinal = time.time()-inicio
+                
                 time.sleep(1)       
+                self.vista.primerClick() 
                 pyautogui.keyDown('f2')                    
-                pyautogui.keyUp('f2')                    
+                pyautogui.keyUp('f2')
+
+                resuelto = "RESUELTO" if self.bombasRestantes==0 else "No RESUELTO"
+                data = [[resuelto, tiempoFinal, self.bombasRestantes]]
+                col = ["Resultado", "Tiempo", "Bombas Restantes"]
+
+                df1 = pd.DataFrame(data, columns=col)
+                path = "results.csv"
+                df1.to_csv(path, index=None, mode="a", header=not os.path.isfile(path))
+
                 break
             
                     

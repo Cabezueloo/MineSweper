@@ -3,7 +3,7 @@ from modelo import Tablero
 import pyscreenshot as ImageGrab
 from vista import Vista
 from controlador import Controlador
-import time
+
 coord = []
 
 def click(x, y, button, pressed):
