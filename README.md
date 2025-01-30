@@ -1,1 +1,3 @@
-True si detecta un color
+MineSweper(Buscaminas)
+Desarollado con Python -> PyGame y el despliegue del menu es PYQT.
+
